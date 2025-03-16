@@ -90,6 +90,28 @@ const OrderController = {
       res.status(500).json({ message: "Server error" });
     }
   },
+
+    // delete function
+    deleteOrder: async (req, res) => {
+        try {
+        if (!req.isAdmin) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
+        const { orderId } = req.params;
+
+        const order = await Order.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+
+        await Order.findByIdAndDelete(orderId);
+        res.json({ message: "Order deleted successfully" });
+        } catch (error) {
+        console.error("Error deleting order:", error);
+        res.status(500).json({ message: "Server error" });
+        }
+    },
 };
 
 module.exports = OrderController;
