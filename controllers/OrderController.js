@@ -24,6 +24,14 @@ const OrderController = {
         });
     
         await newOrder.save();
+
+        //  update admin daily orders and revenue 
+        const admin = await User.findOne({ role: "admin" });
+        if (admin) {
+          admin.dailyOrders += 1;
+          admin.dailyRevenue += totalAmount;
+          await admin.save();
+        }
     
         // Send notification to admin
         const adminEmails = ["kamdilichukwu2020@gmail.com"];

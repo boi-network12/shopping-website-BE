@@ -1,8 +1,12 @@
 const express = require("express");
 const { createOrder, getAllOrders, getUserOrders, updateOrderStatus, deleteOrder } = require("../controllers/OrderController");
 const authMiddleware = require("../middleware/authMiddleware");
+const updateDailyMetrics = require("../middleware/updateDailyMetrics");
 
 const router = express.Router();
+
+// Apply middleware to update daily metrics
+router.use(updateDailyMetrics);
 
 // Create a new order
 router.post("/", authMiddleware, createOrder);
