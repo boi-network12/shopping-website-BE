@@ -13,6 +13,12 @@ const OrderController = {
         if (!cartItems || cartItems.length === 0) {
           return res.status(400).json({ message: "Cart is empty" });
         }
+
+        // Fetch the user who created the order
+        const user = await User.findById(req.user._id);
+        if (!user) {
+          return res.status(404).json({ message: "user not found" })
+        }
     
         const newOrder = new Order({
           user: req.user._id,
@@ -32,8 +38,10 @@ const OrderController = {
           order: newOrder._id, 
           user: req.user._id, 
           amount: totalAmount,
-          status: "pending",
+          status: "completed",
+          type: "income",
           paymentMethod, 
+          createdBy: user.name
         });
 
         await newTransaction.save();
@@ -69,6 +77,23 @@ const OrderController = {
         res.status(201).json({ message: "Order placed successfully", order: newOrder });
     } catch (error) {
       console.error("Order creation error:", error);
+      // If order creation fails, create a failed transaction
+      const { totalAmount } = req.body;
+      const user = await User.findById(req.user._id);
+      if (user) {
+        const failedTransaction = new Transaction({
+          order: null, // No order associated with a failed transaction
+          user: req.user._id,
+          amount: totalAmount,
+          status: "failed", // Set status to "failed"
+          type: "outcome", // Set type to "outcome"
+          paymentMethod: req.body.paymentMethod,
+          createdBy: user.name, // Include the name of the person who created the order
+        });
+
+        await failedTransaction.save();
+      }
+
       res.status(500).json({ message: "Server error" });
     }
   },
@@ -91,8 +116,18 @@ const OrderController = {
   // Get user's orders
   getUserOrders: async (req, res) => {
     try {
-      const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-      res.json(orders);
+      const userId = req.user._id; // Get the user ID from the request
+  
+      // Fetch orders for the logged-in user
+      const orders = await Order.find({ user: userId }).sort({ createdAt: -1 });
+  
+      // If no orders are found, return an empty array
+      if (!orders || orders.length === 0) {
+        return res.status(200).json([]);
+      }
+  
+      // Return the orders
+      res.status(200).json(orders);
     } catch (error) {
       console.error("Error fetching user orders:", error);
       res.status(500).json({ message: "Server error" });

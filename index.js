@@ -22,6 +22,7 @@ connectDB();
 resetDailyStats();
 
 const allowedOrigins = [
+    "https://shopping-website-three-orpin.vercel.app",
     "http://localhost:3000"
 ]
 

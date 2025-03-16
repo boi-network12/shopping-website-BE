@@ -1,4 +1,3 @@
-// models/Transaction.js
 const mongoose = require("mongoose");
 
 const TransactionSchema = new mongoose.Schema(
@@ -22,9 +21,18 @@ const TransactionSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed"],
       default: "pending",
     },
+    type: {
+      type: String,
+      enum: ["income", "outcome"],
+      required: true,
+    },
     paymentMethod: {
       type: String,
       enum: ["payOnline", "cashOnDelivery"],
+      required: true,
+    },
+    createdBy: {
+      type: String, // Name of the person who created the order
       required: true,
     },
   },
