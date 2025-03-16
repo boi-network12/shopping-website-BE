@@ -1,4 +1,6 @@
+const DailyMetrics = require("../models/DailyMetrics");
 const Order = require("../models/Order");
+const Transaction = require("../models/Transaction");
 const User = require("../models/User");
 const { createNotification } = require("./NotificationController");
 
@@ -25,6 +27,17 @@ const OrderController = {
     
         await newOrder.save();
 
+        // Create a new transaction
+        const newTransaction = new Transaction({
+          order: newOrder._id, 
+          user: req.user._id, 
+          amount: totalAmount,
+          status: "pending",
+          paymentMethod, 
+        });
+
+        await newTransaction.save();
+
         //  update admin daily orders and revenue 
         const admin = await User.findOne({ role: "admin" });
         if (admin) {
@@ -32,6 +45,18 @@ const OrderController = {
           admin.dailyRevenue += totalAmount;
           await admin.save();
         }
+
+        // Update DailyMetrics for the current day
+        const today = new Date();
+        const startOfDay = new Date(today.setHours(0, 0, 0, 0)); 
+
+        await DailyMetrics.findOneAndUpdate(
+          { date: startOfDay },
+          {
+            $inc: { totalOrders: 1, totalRevenue: totalAmount }, 
+          },
+          { upsert: true, new: true }
+        );
     
         // Send notification to admin
         const adminEmails = ["kamdilichukwu2020@gmail.com"];

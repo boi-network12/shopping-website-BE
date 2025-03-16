@@ -7,6 +7,7 @@ const NotificationRoutes = require('./routes/NotificationRoutes');
 const ProductsRoutes = require('./routes/products');
 const OrderRoutes = require('./routes/OrdersRoutes');
 const TransactionRoutes = require('./routes/transactionRoutes');
+const dailyMetricsRoutes = require('./routes/dailyMetricsRoutes');
 const resetDailyStats = require('./utils/resetDailyStats');
 const trackVisitor = require('./middleware/VisitorMiddleware');
 
@@ -46,6 +47,7 @@ app.use('/', NotificationRoutes)
 app.use('/product', ProductsRoutes)
 app.use("/orders", OrderRoutes)
 app.use("/transactions", TransactionRoutes)
+app.use("/daily-metrics", dailyMetricsRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
